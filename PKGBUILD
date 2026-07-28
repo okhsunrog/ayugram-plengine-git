@@ -4,7 +4,7 @@
 : "${_jobs:=10}"
 
 pkgname=ayugram-plengine-git
-pkgver=6.7.5.PLEngine.0.1.1.r3.g1913892
+pkgver=6.7.5.PLEngine.0.1.1.r4.g4cbb582
 pkgrel=1
 pkgdesc="AyuGram Desktop with the cross-platform PLEngine plugin system"
 arch=('x86_64' 'aarch64')
