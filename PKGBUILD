@@ -5,38 +5,55 @@
 
 pkgname=ayugram-plengine-git
 pkgver=6.7.5.PLEngine.0.1.1.r4.g4cbb582
-pkgrel=1
+pkgrel=2
 pkgdesc="AyuGram Desktop with the cross-platform PLEngine plugin system"
 arch=('x86_64' 'aarch64')
 url="https://github.com/okhsunrog/AyuGramDesktop-PLEngine"
 license=('GPL-3.0-or-later')
 depends=(
+  abseil-cpp
   ada
   ffmpeg
+  glib2
+  glibc
+  hicolor-icon-theme
   hunspell
   kcoreaddons
   libavif
   libdispatch
+  libgcc
   libheif
+  libjpeg-turbo
   libjxl
   libpipewire
+  libstdc++
   libvpx
+  libx11
   libxcomposite
   libxdamage
+  libxcb
+  libxext
+  libxfixes
+  libxkbcommon
   libxrandr
   libxtst
+  lz4
   minizip-ng
   openal
   openh264
+  openssl
   opus
+  pipewire
   protobuf
   qt6-base
+  qt6-declarative
   qt6-imageformats
   qt6-svg
   qt6-wayland
   rnnoise
   xcb-util-keysyms
   xxhash
+  zlib
 )
 makedepends=(
   boost
@@ -55,12 +72,13 @@ makedepends=(
   tl-expected
 )
 optdepends=(
-  'webkit2gtk: embedded browser features'
+  'webkit2gtk-4.1: embedded browser features using GTK 3'
+  'webkitgtk-6.0: embedded browser features using GTK 4'
   'xdg-desktop-portal: desktop integration'
 )
 provides=('ayugram-desktop')
 conflicts=('ayugram-desktop')
-options=('!lto')
+options=('!debug' '!lto')
 
 _pkgsrc=AyuGramDesktop-PLEngine
 _tdsrc=telegram-tdlib
