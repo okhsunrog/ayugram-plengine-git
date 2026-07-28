@@ -4,8 +4,8 @@
 : "${_jobs:=10}"
 
 pkgname=ayugram-plengine-git
-pkgver=6.7.5.PLEngine.0.1.1.r4.g4cbb582
-pkgrel=2
+pkgver=6.7.5.PLEngine.0.1.1.r5.gf118902
+pkgrel=1
 pkgdesc="AyuGram Desktop with the cross-platform PLEngine plugin system"
 arch=('x86_64' 'aarch64')
 url="https://github.com/okhsunrog/AyuGramDesktop-PLEngine"
@@ -158,4 +158,12 @@ build() {
 
 package() {
   DESTDIR="$pkgdir" cmake --install build
+
+  local icon
+  while IFS= read -r -d '' icon; do
+    mv "$icon" "${icon%/*}/com.ayugram.desktop.png"
+  done < <(
+    find "$pkgdir/usr/share/icons/hicolor" \
+      -type f -name 'org.telegram.desktop.png' -print0
+  )
 }
