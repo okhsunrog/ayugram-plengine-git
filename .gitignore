@@ -1,5 +1,8 @@
 *.log
 *.part
 *.tar.*
-pkg/
-src/
+/pkg/
+/src/
+# makepkg's mirror clones of the source= git repos
+/AyuGramDesktop-PLEngine/
+/telegram-tdlib/

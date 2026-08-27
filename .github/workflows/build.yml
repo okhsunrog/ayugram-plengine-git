@@ -1,0 +1,98 @@
+name: build ayugram
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:base-devel
+    timeout-minutes: 350
+
+    steps:
+      - name: Install base tooling
+        # Package deps are installed by `makepkg -s` from the PKGBUILD itself,
+        # so depends=/makedepends= stay the single source of truth.
+        run: pacman -Syu --noconfirm --needed git sudo ccache
+
+      - uses: actions/checkout@v4
+
+      - name: Set up unprivileged build user
+        run: |
+          useradd -m builder
+          chown -R builder:builder "$GITHUB_WORKSPACE"
+          echo 'builder ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/builder
+
+      - name: Restore ccache
+        uses: actions/cache/restore@v4
+        id: restore_ccache
+        with:
+          path: /home/builder/.ccache
+          # -git package: sources move without PKGBUILD changing, so the key
+          # is per-run and the restore-keys fallback does the real work.
+          key: ccache-${{ hashFiles('PKGBUILD') }}-${{ github.run_id }}
+          restore-keys: |
+            ccache-${{ hashFiles('PKGBUILD') }}-
+            ccache-
+
+      - name: Configure ccache
+        run: |
+          mkdir -p /home/builder/.ccache
+          chown -R builder:builder /home/builder/.ccache
+          sudo -u builder ccache -M 3G
+          sudo -u builder ccache -z
+
+      - name: Build package
+        run: |
+          sudo -u builder env \
+            CCACHE_DIR=/home/builder/.ccache \
+            PATH=/usr/lib/ccache/bin:$PATH \
+            _jobs="$(nproc)" \
+            makepkg -s --noconfirm --noprogressbar
+
+      - name: Verify package
+        run: |
+          set -euo pipefail
+          pkg="$(find . -maxdepth 1 -type f -name 'ayugram-plengine-git-*.pkg.tar.zst' -print -quit)"
+          test -n "$pkg"
+
+          # Installing it exercises the declared depends= for real: a missing
+          # runtime dependency fails here rather than on the laptop.
+          pacman -U --noconfirm "$pkg"
+          test -x /usr/bin/AyuGram
+
+          # The whole reason this package gets rebuilt is soname bumps in
+          # abseil-cpp/protobuf/etc. Every linked library must resolve.
+          if ldd /usr/bin/AyuGram | grep 'not found'; then
+            echo '::error::AyuGram has unresolved shared libraries'
+            exit 1
+          fi
+
+          test -f /usr/share/applications/com.ayugram.desktop.desktop
+          pacman -Qi ayugram-plengine-git | grep -q 'Provides.*ayugram-desktop'
+
+      - name: ccache stats
+        if: always()
+        run: sudo -u builder ccache -s
+
+      - name: Save ccache
+        uses: actions/cache/save@v4
+        if: ${{ !cancelled() }}
+        with:
+          path: /home/builder/.ccache
+          key: ${{ steps.restore_ccache.outputs.cache-primary-key }}
+
+      - name: Upload packages
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ayugram-plengine-git-pkgs
+          path: '*.pkg.tar.zst'
+          if-no-files-found: error
+          retention-days: 14
