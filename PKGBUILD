@@ -5,7 +5,7 @@
 
 pkgname=ayugram-plengine-git
 pkgver=6.7.5.PLEngine.0.1.1.r7.gf976eb7
-pkgrel=1
+pkgrel=2
 pkgdesc="AyuGram Desktop with the cross-platform PLEngine plugin system"
 arch=('x86_64' 'aarch64')
 url="https://github.com/okhsunrog/AyuGramDesktop-PLEngine"
@@ -26,6 +26,7 @@ depends=(
   libjpeg-turbo
   libjxl
   libpipewire
+  libsrtp
   libstdc++
   libvpx
   libx11
@@ -45,6 +46,7 @@ depends=(
   opus
   pipewire
   protobuf
+  qrcodegencpp-cmake
   qt6-base
   qt6-declarative
   qt6-imageformats
